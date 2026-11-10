@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friendship Bond & Compatibility Quiz</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+        }
+        .option-btn {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
+        }
+        .glow-button {
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 35px rgba(168, 85, 247, 0.7);
+            transform: scale(1.02);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4c1d95;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 sm:p-6 min-h-screen">
+
+    <div id="app" class="w-full max-w-2xl">
+        <!-- HEADER -->
+        <header class="text-center mb-6">
+            <div class="inline-flex items-center justify-center p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20 mb-3">
+                <i class="fa-solid fa-heart-circle-bolt text-3xl text-purple-400 mr-2 animate-pulse"></i>
+                <span class="text-2xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">BFF Bonding Test</span>
+            </div>
+            <p class="text-slate-400 text-sm sm:text-base">Dekho aapke dost aapko kitna achhe se jaante hain!</p>
+        </header>
+
+        <!-- MAIN CONTAINER -->
+        <div class="glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+
+            <!-- SCREEN 1: WELCOME / START SCREEN -->
+            <div id="welcomeScreen" class="space-y-6">
+                <div class="text-center space-y-3">
+                    <h1 class="text-3xl font-extrabold text-white">Custom Friendship Quiz Maker</h1>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        Aap apne 10 customized questions aur 4 options type kar sakte hain, sahi jawab select karke dosto ke sath share kar sakte hain!
+                    </p>
+                </div>
+
+                <div class="space-y-4 pt-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-purple-300 mb-2">Aapka Naam (Creator Name):</label>
+                        <input type="text" id="creatorNameInput" placeholder="Apna naam likhein..." 
+                               class="w-full px-4 py-3.5 bg-slate-900/80 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-slate-500 outline-none transition-all">
+                    </div>
+
+                    <button onclick="startCreatorMode()" 
+                            class="w-full glow-button bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl text-lg flex items-center justify-center space-x-2">
+                        <span>Questions Edit & Set Karein</span>
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </div>
+
+                <!-- DIRECT PLAY VIA PASTED CODE / LINK FALLBACK -->
+                <div class="border-t border-slate-800 pt-6 mt-6 space-y-3">
+                    <p class="text-xs text-center text-slate-400">Kisi dost ne aapko Quiz link ya code bheja hai?</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="quizCodeInput" placeholder="Yahan Quiz Link paste karein..." 
+                               class="flex-1 px-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 outline-none">
+                        <button onclick="loadQuizFromInput()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs font-bold rounded-lg border border-purple-500/30 transition">
+                            Play Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: CREATOR SETTING & TYPING QUESTIONS -->
+            <div id="creatorQuizScreen" class="hidden space-y-6">
+                <!-- Progress Header -->
+                <div class="flex justify-between items-center text-sm font-semibold text-purple-300">
+                    <span id="creatorProgressText">Question 1 / 10</span>
+                    <span class="bg-purple-900/50 px-3 py-1 rounded-full border border-purple-500/30 text-xs">Type Q&A & Pick Correct Answer</span>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                    <div id="creatorProgressBar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+
+                <!-- Editable Question Form -->
+                <div class="bg-slate-900/70 p-5 rounded-2xl border border-slate-700/60 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-purple-300 mb-1 uppercase tracking-wider">Question Write / Edit Karein:</label>
+                        <input type="text" id="customQText" placeholder="Apna Question type karein..." 
+                               class="w-full px-4 py-3 bg-slate-950 border border-purple-500/30 rounded-xl text-white font-medium focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+
+                    <div class="space-y-3 pt-2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">4 Options Type Karein aur Sahi (Correct) Option Choose Karein:</label>
+                        
+                        <div class="space-y-2.5" id="creatorOptionsInputContainer">
+                            <!-- Options input rows with radio button generated in JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center gap-3">
+                    <button onclick="prevCreatorQuestion()" id="prevQBtn" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold rounded-xl transition border border-slate-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Previous</span>
+                    </button>
+
+                    <button onclick="saveAndNextCreatorQuestion()" id="nextQBtn" class="flex-1 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold rounded-xl transition flex items-center justify-center gap-2">
+                        <span id="nextBtnText">Save & Next Question</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 3: LINK GENERATED / SHARE SCREEN -->
+            <div id="shareScreen" class="hidden text-center space-y-6">
+                <div class="w-20 h-20 bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl animate-bounce">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Wah! Quiz Tayar Hai 🎉</h2>
+                    <p class="text-slate-300 text-sm mt-1">Aapka customized friendship test link ready hai.</p>
+                </div>
+
+                <!-- Generated Link Box -->
+                <div class="bg-slate-900/90 p-4 rounded-2xl border border-purple-500/30 text-left space-y-3">
+                    <label class="text-xs text-purple-300 font-bold uppercase tracking-wider block">Shareable Quiz Link</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="shareUrlInput" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-300 outline-none select-all font-mono">
+                        <button onclick="copyShareLink()" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition whitespace-nowrap">
+                            <i class="fa-solid fa-copy"></i>
+                            <span id="copyBtnText">Copy</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button onclick="shareOnWhatsApp()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <span>WhatsApp Par Bhejo</span>
+                    </button>
+                    
+                    <button onclick="testSelfQuiz()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-purple-300 font-bold py-3 px-4 rounded-xl text-sm border border-purple-500/30 flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Test Play Karein</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 4: PLAYER ENTER NAME -->
+            <div id="playerStartScreen" class="hidden space-y-6">
+                <div class="text-center space-y-2">
+                    <span class="text-xs font-bold text-purple-400 bg-purple-900/40 px-3 py-1 rounded-full border border-purple-500/30 uppercase tracking-wider">Friend Challenge</span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white">
+                        <span id="playerHostName" class="text-purple-400">Creator</span> Ka Test!
+                    </h1>
+                    <p class="text-slate-300 text-sm">Dekhte hain aap apne dost ko kitne ache se jaante ho. 10 questions ka jawab do!</p>
+                </div>
+
+                <div class="space-y-4 pt-2">
+                    <div>
+                        <label class="block text-sm font-semibold text-purple-300 mb-2">Aapka Naam (Player Name):</label>
+                        <input type="text" id="playerNameInput" placeholder="Apna naam yahan likho..." 
+                               class="w-full px-4 py-3.5 bg-slate-900/80 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-slate-500 outline-none transition-all">
+                    </div>
+
+                    <button onclick="startPlayerQuiz()" 
+                            class="w-full glow-button bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl text-lg flex items-center justify-center space-x-2">
+                        <span>Game Shuru Karein</span>
+                        <i class="fa-solid fa-gamepad"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 5: PLAYER ANSWERING QUIZ -->
+            <div id="playerQuizScreen" class="hidden space-y-6">
+                <!-- Progress Header -->
+                <div class="flex justify-between items-center text-sm font-semibold text-purple-300">
+                    <span id="playerProgressText">Question 1 / 10</span>
+                    <span class="bg-indigo-900/50 px-3 py-1 rounded-full border border-indigo-500/30 text-xs">Score: <span id="currentScore">0</span></span>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                    <div id="playerProgressBar" class="bg-gradient-to-r from-indigo-500 to-pink-500 h-2.5 rounded-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+
+                <!-- Question Box -->
+                <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-700/50">
+                    <h2 id="playerQuestionText" class="text-lg sm:text-xl font-bold text-white mb-4">Question loading...</h2>
+                    
+                    <div id="playerOptionsContainer" class="grid grid-cols-1 gap-3">
+                        <!-- Options generated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 6: FINAL RESULT & MEDAL SCREEN -->
+            <div id="resultScreen" class="hidden text-center space-y-6">
+                <!-- Trophy / Medal Icon Header -->
+                <div class="relative py-4">
+                    <div id="medalIcon" class="w-24 h-24 mx-auto rounded-full flex items-center justify-center text-5xl shadow-2xl transition transform hover:scale-110">
+                        🏆
+                    </div>
+                    <div id="badgeTag" class="inline-block mt-3 px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-lg">
+                        BFF Badge
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-extrabold text-white" id="resultTitle">Zabardast Bonding!</h2>
+                    <p class="text-slate-300 text-sm" id="resultSubtitle">Aapne bohot badhiya perform kiya!</p>
+                </div>
+
+                <!-- Score Board -->
+                <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-700 flex justify-around items-center">
+                    <div>
+                        <div class="text-xs text-slate-400">Total Questions</div>
+                        <div class="text-xl font-bold text-white">10</div>
+                    </div>
+                    <div class="w-px h-8 bg-slate-700"></div>
+                    <div>
+                        <div class="text-xs text-slate-400">Sahi Jawab</div>
+                        <div class="text-3xl font-extrabold text-purple-400" id="finalScoreText">0/10</div>
+                    </div>
+                    <div class="w-px h-8 bg-slate-700"></div>
+                    <div>
+                        <div class="text-xs text-slate-400">Accuracy</div>
+                        <div class="text-xl font-bold text-emerald-400" id="accuracyText">0%</div>
+                    </div>
+                </div>
+
+                <!-- Detail Tag Message -->
+                <div class="p-4 rounded-xl bg-purple-950/40 border border-purple-500/20 text-purple-200 text-sm leading-relaxed" id="resultDesc">
+                    <!-- Text inserted dynamically -->
+                </div>
+
+                <!-- Answer Review Section -->
+                <div class="text-left space-y-3 pt-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Answer Review Summary:</h3>
+                    <div id="answersReviewContainer" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+                        <!-- Summary review items -->
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button onclick="resetApp()" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        <span>Apna Naya Quiz Banayein</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="text-center mt-6 text-xs text-slate-500">
+            Designed for Fun & Friendship Testing • Made with ❤️
+        </footer>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Default Template Questions (Editable by Creator)
+        const defaultQuestions = [
+            {
+                q: "Mera sabse favourite khaana (food) kya hai?",
+                options: ["Pizza / Burger 🍕", "Biryani / South Indian 🍲", "Momos / Chinese 🥟", "Home Made Simple Food 🍱"],
+                correct: 0
+            },
+            {
+                q: "Mera mood off hone par main kya karna pasand karta/karti hoon?",
+                options: ["Gane Sunna 🎧", "Sona / Akela Rehna 😴", "Dosto Se Baat Karna 📞", "Khaana Khana 🍔"],
+                correct: 0
+            },
+            {
+                q: "Mera sabse bada secret kya hai?",
+                options: ["Main Bohot Emotional Hoon 🥺", "Mujhe Jaldi Gussa Aata Hai 😡", "Main Bohot Dramebaaz Hoon 🎭", "Main Bohot Lazy Hoon 🦥"],
+                correct: 0
+            },
+            {
+                q: "Mera dream holiday destination konsa hai?",
+                options: ["Pahad / Cold Places 🏔️", "Beach / Goa / Maldives 🏖️", "Historical Cities 🏰", "Ghar Par Rest Karna 🏠"],
+                correct: 0
+            },
+            {
+                q: "Mujhe kisse sabse zyada darr lagta hai?",
+                options: ["Bhoot / Darkness 👻", "Cockroach / Snakes 🐍", "Exam Result / Papa 🎓", "Dost Ko Khone Se 💔"],
+                correct: 0
+            },
+            {
+                q: "Mera sabse favourite pastime / hobby kya hai?",
+                options: ["Reels / Social Media 📱", "Gaming 🎮", "Movies / Series Dekhna 🍿", "Neend Puri Karna 💤"],
+                correct: 0
+            },
+            {
+                q: "Agar hum dono me ladai ho jaye toh pehle sorry kaun bolega?",
+                options: ["Hamesha Main 😇", "Hamesha Tum 😂", "Dono Me Se Koi Nahi (Ego) 🙈", "Jo Galat Hoga Wohi Bolega 🤝"],
+                correct: 0
+            },
+            {
+                q: "Mere baare me ek baat jo sabko nahi pata?",
+                options: ["Main Choti Baaton Par Rota Hoon 😭", "Main Raat Ko Der Tak Jagta Hoon 🌙", "Main Bohot Overthink Karta Hoon 🧠", "Main Dil Ka Bohot Saaf Hoon ❤️"],
+                correct: 0
+            },
+            {
+                q: "Mera favourite weather / mausam konsa hai?",
+                options: ["Baarish / Rainy 🌧️", "Thand / Winter ❄️", "Garmi / Summer ☀️", "Basant / Autumn 🍂"],
+                correct: 0
+            },
+            {
+                q: "Hamaari dosti ko tum ek word me kaise describe karoge?",
+                options: ["Unbreakable 💎", "Crazy & Mad 🤪", "Brotherhood / Sisterhood 👥", "Lifetime Bonding ♾️"],
+                correct: 0
+            }
+        ];
+
+        // Custom Quiz working state
+        let customQuizData = JSON.parse(JSON.stringify(defaultQuestions));
+
+        // Global Game State
+        let creatorName = "";
+        let playerName = "";
+        let playerAnswers = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let activeQuizData = null;
+
+        // Custom Notification Function
+        function showNotification(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl z-50 animate-bounce';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> ${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        // UTF-8 friendly base64 encoding & decoding
+        function utf8ToBase64(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+        }
+
+        function base64ToUtf8(str) {
+            return decodeURIComponent(Array.prototype.map.call(atob(str), (c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        }
+
+        // INIT ON PAGE LOAD
+        window.onload = function() {
+            checkAndLoadQuizFromHash();
+        };
+
+        function checkAndLoadQuizFromHash() {
+            const hash = window.location.hash;
+            let rawData = null;
+
+            if (hash && hash.includes('quizData=')) {
+                rawData = hash.split('quizData=')[1];
+            } else {
+                const urlParams = new URLSearchParams(window.location.search);
+                rawData = urlParams.get('data');
+            }
+
+            if (rawData) {
+                try {
+                    const decodedStr = base64ToUtf8(rawData);
+                    const decoded = JSON.parse(decodedStr);
+                    if (decoded && decoded.creator && decoded.questions && decoded.questions.length === 10) {
+                        activeQuizData = decoded;
+                        showPlayerStartScreen();
+                        return true;
+                    }
+                } catch (e) {
+                    console.error("Invalid Payload Link", e);
+                }
+            }
+            return false;
+        }
+
+        // START CREATOR MODE
+        function startCreatorMode() {
+            const input = document.getElementById('creatorNameInput').value.trim();
+            if (!input) {
+                showNotification("Kripya apna naam pehle likhein!");
+                return;
+            }
+            creatorName = input;
+            currentQuestionIndex = 0;
+
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('creatorQuizScreen').classList.remove('hidden');
+
+            renderCreatorQuestionForm();
+        }
+
+        // RENDER CREATOR QUESTION EDIT FORM
+        function renderCreatorQuestionForm() {
+            const qData = customQuizData[currentQuestionIndex];
+            
+            // Update Progress
+            document.getElementById('creatorProgressText').innerText = `Question ${currentQuestionIndex + 1} / 10`;
+            document.getElementById('creatorProgressBar').style.width = `${((currentQuestionIndex + 1) / 10) * 100}%`;
+            
+            // Set Question Input Value
+            document.getElementById('customQText').value = qData.q;
+
+            // Render Options Input Form with Radio Button for Correct Choice
+            const container = document.getElementById('creatorOptionsInputContainer');
+            container.innerHTML = "";
+
+            qData.options.forEach((optText, idx) => {
+                const row = document.createElement('div');
+                row.className = "flex items-center gap-2.5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 focus-within:border-purple-500 transition";
+                
+                const isChecked = (qData.correct === idx) ? 'checked' : '';
+                
+                row.innerHTML = `
+                    <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-400 hover:text-purple-300">
+                        <input type="radio" name="correctAnswerRadio" value="${idx}" ${isChecked} class="w-4 h-4 accent-purple-500 cursor-pointer">
+                        <span>Option ${idx + 1}:</span>
+                    </label>
+                    <input type="text" id="optInput_${idx}" value="${optText}" placeholder="Option ${idx + 1} text..." 
+                           class="flex-1 bg-transparent text-sm text-slate-200 outline-none font-medium placeholder-slate-600">
+                `;
+                container.appendChild(row);
+            });
+
+            // Button controls
+            const prevBtn = document.getElementById('prevQBtn');
+            if (currentQuestionIndex === 0) {
+                prevBtn.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                prevBtn.classList.remove('opacity-40', 'pointer-events-none');
+            }
+
+            const nextBtnText = document.getElementById('nextBtnText');
+            if (currentQuestionIndex === 9) {
+                nextBtnText.innerText = "Finish & Generate Quiz Link";
+            } else {
+                nextBtnText.innerText = "Save & Next Question";
+            }
+        }
+
+        // SAVE CURRENT QUESTION AND GO TO NEXT OR PREVIOUS
+        function saveCurrentQuestionData() {
+            const qTitle = document.getElementById('customQText').value.trim();
+            if (!qTitle) {
+                showNotification("Question khali nahi ho sakta!");
+                return false;
+            }
+
+            const opts = [];
+            for (let i = 0; i < 4; i++) {
+                const optVal = document.getElementById(`optInput_${i}`).value.trim();
+                if (!optVal) {
+                    showNotification(`Option ${i + 1} type karna zaroori hai!`);
+                    return false;
+                }
+                opts.push(optVal);
+            }
+
+            const selectedRadio = document.querySelector('input[name="correctAnswerRadio"]:checked');
+            if (!selectedRadio) {
+                showNotification("Sahi option choose kijiye!");
+                return false;
+            }
+
+            customQuizData[currentQuestionIndex] = {
+                q: qTitle,
+                options: opts,
+                correct: parseInt(selectedRadio.value)
+            };
+
+            return true;
+        }
+
+        function saveAndNextCreatorQuestion() {
+            if (!saveCurrentQuestionData()) return;
+
+            if (currentQuestionIndex < 9) {
+                currentQuestionIndex++;
+                renderCreatorQuestionForm();
+            } else {
+                generateQuizLink();
+            }
+        }
+
+        function prevCreatorQuestion() {
+            if (currentQuestionIndex > 0) {
+                saveCurrentQuestionData();
+                currentQuestionIndex--;
+                renderCreatorQuestionForm();
+            }
+        }
+
+        // GENERATE SHAREABLE LINK
+        function generateQuizLink() {
+            const quizPayload = {
+                creator: creatorName,
+                questions: customQuizData
+            };
+
+            const jsonStr = JSON.stringify(quizPayload);
+            const encodedPayload = utf8ToBase64(jsonStr);
+            
+            // Save payload to local storage for quick fallback
+            try {
+                localStorage.setItem('bff_created_quiz', jsonStr);
+            } catch (e) {}
+
+            const baseUrl = window.location.origin + window.location.pathname;
+            const fullShareUrl = `${baseUrl}#quizData=${encodedPayload}`;
+
+            document.getElementById('shareUrlInput').value = fullShareUrl;
+
+            // Store in global activeQuizData for test play
+            activeQuizData = quizPayload;
+
+            document.getElementById('creatorQuizScreen').classList.add('hidden');
+            document.getElementById('shareScreen').classList.remove('hidden');
+        }
+
+        // COPY LINK TO CLIPBOARD
+        function copyShareLink() {
+            const copyText = document.getElementById('shareUrlInput');
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                navigator.clipboard.writeText(copyText.value);
+            }
+            
+            const copyBtnText = document.getElementById('copyBtnText');
+            copyBtnText.innerText = "Copied!";
+            showNotification("Link copy ho gaya! Dost ko bhej do.");
+            setTimeout(() => { copyBtnText.innerText = "Copy"; }, 3000);
+        }
+
+        // SHARE ON WHATSAPP
+        function shareOnWhatsApp() {
+            const link = document.getElementById('shareUrlInput').value;
+            const msg = `Hey! 👋 Main (${creatorName}) ne tumhare liye customized Friendship Quiz banaya hai. Dekhte hain tum mujhe kitna ache se jaante ho! 😉\n\nKhelo aur apna score dekho 👇\n${link}`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        // TEST PLAY CREATED QUIZ
+        function testSelfQuiz() {
+            showPlayerStartScreen();
+        }
+
+        // LOAD QUIZ FROM MANUAL CODE/LINK INPUT
+        function loadQuizFromInput() {
+            const inputVal = document.getElementById('quizCodeInput').value.trim();
+            if (!inputVal) {
+                showNotification("Link paste karein!");
+                return;
+            }
+
+            let code = inputVal;
+            if (inputVal.includes('quizData=')) {
+                code = inputVal.split('quizData=')[1];
+            } else if (inputVal.includes('?data=')) {
+                code = inputVal.split('?data=')[1];
+            }
+
+            try {
+                const decodedStr = base64ToUtf8(code);
+                const decoded = JSON.parse(decodedStr);
+                if (decoded && decoded.creator && decoded.questions) {
+                    activeQuizData = decoded;
+                    showPlayerStartScreen();
+                } else {
+                    showNotification("Invalid Link format!");
+                }
+            } catch(e) {
+                showNotification("Invalid Quiz Link!");
+            }
+        }
+
+        // SHOW PLAYER START SCREEN
+        function showPlayerStartScreen() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('shareScreen').classList.add('hidden');
+            document.getElementById('playerStartScreen').classList.remove('hidden');
+
+            document.getElementById('playerHostName').innerText = activeQuizData.creator;
+        }
+
+        // START PLAYER QUIZ
+        function startPlayerQuiz() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            if (!name) {
+                showNotification("Kripya apna naam likhein!");
+                return;
+            }
+
+            playerName = name;
+            playerAnswers = [];
+            currentQuestionIndex = 0;
+            score = 0;
+
+            document.getElementById('playerStartScreen').classList.add('hidden');
+            document.getElementById('playerQuizScreen').classList.remove('hidden');
+
+            renderPlayerQuestion();
+        }
+
+        // RENDER PLAYER QUESTION
+        function renderPlayerQuestion() {
+            const qData = activeQuizData.questions[currentQuestionIndex];
+
+            document.getElementById('playerProgressText').innerText = `Question ${currentQuestionIndex + 1} / 10`;
+            document.getElementById('playerProgressBar').style.width = `${((currentQuestionIndex + 1) / 10) * 100}%`;
+            document.getElementById('currentScore').innerText = score;
+
+            document.getElementById('playerQuestionText').innerText = `${currentQuestionIndex + 1}. ${qData.q}`;
+
+            const container = document.getElementById('playerOptionsContainer');
+            container.innerHTML = "";
+
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full text-left p-4 rounded-xl bg-slate-800/80 hover:bg-indigo-900/50 border border-slate-700/80 hover:border-indigo-500 text-slate-200 hover:text-white font-medium text-sm flex items-center justify-between transition-all";
+                btn.innerHTML = `
+                    <span>${opt}</span>
+                    <i class="fa-regular fa-circle text-slate-500"></i>
+                `;
+                btn.onclick = () => handlePlayerChoice(idx, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        // HANDLE PLAYER CHOICE WITH VISUAL FEEDBACK
+        function handlePlayerChoice(selectedIdx, btnElement) {
+            const allBtns = document.getElementById('playerOptionsContainer').children;
+            for (let b of allBtns) {
+                b.disabled = true;
+                b.style.pointerEvents = 'none';
+            }
+
+            const qData = activeQuizData.questions[currentQuestionIndex];
+            const correctIdx = qData.correct;
+            playerAnswers.push(selectedIdx);
+
+            if (selectedIdx === correctIdx) {
+                score++;
+                btnElement.classList.remove('bg-slate-800/80', 'border-slate-700/80');
+                btnElement.classList.add('bg-emerald-600/30', 'border-emerald-500', 'text-emerald-200');
+                btnElement.querySelector('i').className = "fa-solid fa-circle-check text-emerald-400";
+            } else {
+                btnElement.classList.remove('bg-slate-800/80', 'border-slate-700/80');
+                btnElement.classList.add('bg-rose-600/30', 'border-rose-500', 'text-rose-200');
+                btnElement.querySelector('i').className = "fa-solid fa-circle-xmark text-rose-400";
+
+                // Highlight correct option
+                if (allBtns[correctIdx]) {
+                    allBtns[correctIdx].classList.remove('bg-slate-800/80', 'border-slate-700/80');
+                    allBtns[correctIdx].classList.add('bg-emerald-600/30', 'border-emerald-500', 'text-emerald-200');
+                    allBtns[correctIdx].querySelector('i').className = "fa-solid fa-circle-check text-emerald-400";
+                }
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < 10) {
+                    renderPlayerQuestion();
+                } else {
+                    showFinalResult();
+                }
+            }, 1200);
+        }
+
+        // DISPLAY FINAL RESULT & BADGES
+        function showFinalResult() {
+            document.getElementById('playerQuizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+
+            const medalEl = document.getElementById('medalIcon');
+            const badgeTag = document.getElementById('badgeTag');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultSubtitle = document.getElementById('resultSubtitle');
+            const resultDesc = document.getElementById('resultDesc');
+            
+            document.getElementById('finalScoreText').innerText = `${score} / 10`;
+            document.getElementById('accuracyText').innerText = `${(score / 10) * 100}%`;
+
+            const host = activeQuizData.creator;
+
+            // Render Answers Breakdown
+            const reviewContainer = document.getElementById('answersReviewContainer');
+            reviewContainer.innerHTML = "";
+            activeQuizData.questions.forEach((qItem, idx) => {
+                const playerAnsIdx = playerAnswers[idx];
+                const isCorrect = (playerAnsIdx === qItem.correct);
+
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-xl border text-xs space-y-1 ${isCorrect ? 'bg-emerald-950/30 border-emerald-500/30' : 'bg-rose-950/30 border-rose-500/30'}`;
+                item.innerHTML = `
+                    <div class="font-bold text-white flex justify-between">
+                        <span>Q${idx+1}: ${qItem.q}</span>
+                        <span>${isCorrect ? '✅' : '❌'}</span>
+                    </div>
+                    <div class="${isCorrect ? 'text-emerald-300' : 'text-rose-300'}">Aapka jawab: ${qItem.options[playerAnsIdx]}</div>
+                    ${!isCorrect ? `<div class="text-emerald-400">Sahi jawab: ${qItem.options[qItem.correct]}</div>` : ''}
+                `;
+                reviewContainer.appendChild(item);
+            });
+
+            if (score === 10) {
+                medalEl.innerText = "🏆";
+                medalEl.className = "w-24 h-24 mx-auto bg-amber-500/20 border-4 border-amber-400 rounded-full flex items-center justify-center text-5xl shadow-2xl text-amber-300";
+                badgeTag.innerText = "🥇 BFF (Best Friend Forever)";
+                badgeTag.className = "inline-block mt-3 px-4 py-1.5 rounded-full font-extrabold text-xs uppercase tracking-wider bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/40";
+                resultTitle.innerText = `Gazab! Aap ${host} ke Sabse Pakke Dost Ho! ❤️`;
+                resultSubtitle.innerText = "10 me se 10 Sahi Jawab! Perfectly Matched!";
+                resultDesc.innerText = `Aap aur ${host} ek doosre ke saare raaz aur pasand-napasand ache se jaante hain. Aapki friendship ekdam unbreakable hai! 🎉`;
+                
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            } else if (score >= 7) {
+                medalEl.innerText = "🥈";
+                medalEl.className = "w-24 h-24 mx-auto bg-slate-400/20 border-4 border-slate-300 rounded-full flex items-center justify-center text-5xl shadow-2xl text-slate-200";
+                badgeTag.innerText = "🥈 Close Buddy / True Friend";
+                badgeTag.className = "inline-block mt-3 px-4 py-1.5 rounded-full font-extrabold text-xs uppercase tracking-wider bg-slate-300 text-slate-950 shadow-lg shadow-slate-300/40";
+                resultTitle.innerText = `Bahut Badiya Bonding! ✨`;
+                resultSubtitle.innerText = `${score} out of 10 score kiya!`;
+                resultDesc.innerText = `Aap ${host} ke kafi close friend hain. Bas thodi aur baatein jaan loge toh Best Friends ban jaoge! 🙌`;
+
+                confetti({
+                    particleCount: 60,
+                    spread: 50,
+                    origin: { y: 0.6 }
+                });
+            } else if (score >= 4) {
+                medalEl.innerText = "🥉";
+                medalEl.className = "w-24 h-24 mx-auto bg-amber-800/20 border-4 border-amber-600 rounded-full flex items-center justify-center text-5xl shadow-2xl text-amber-400";
+                badgeTag.innerText = "🥉 Good Friend";
+                badgeTag.className = "inline-block mt-3 px-4 py-1.5 rounded-full font-extrabold text-xs uppercase tracking-wider bg-amber-700 text-amber-100 shadow-lg shadow-amber-700/40";
+                resultTitle.innerText = `Theek-Thak Score! 👍`;
+                resultSubtitle.innerText = `${score} out of 10 answers sahi hue.`;
+                resultDesc.innerText = `Aap aur ${host} ache dost hain, par abhi ek-dusre ko thoda aur jaanna baki hai! 😉`;
+            } else {
+                medalEl.innerText = "🤝";
+                medalEl.className = "w-24 h-24 mx-auto bg-purple-900/40 border-4 border-purple-500 rounded-full flex items-center justify-center text-5xl shadow-2xl text-purple-300";
+                badgeTag.innerText = "😜 Casual Acquaintance / Pakka Dushman";
+                badgeTag.className = "inline-block mt-3 px-4 py-1.5 rounded-full font-extrabold text-xs uppercase tracking-wider bg-purple-800 text-purple-200 shadow-lg shadow-purple-800/40";
+                resultTitle.innerText = `Arre Yaar! Ye Kya Hua? 😂`;
+                resultSubtitle.innerText = `Sirf ${score} score aaya!`;
+                resultDesc.innerText = `Aapko ${host} ke saath thoda aur time spend karna chahiye! Lagta hai ek lambi chai party ki zaroorat hai ☕.`;
+            }
+        }
+
+        function resetApp() {
+            window.location.hash = "";
+            location.reload();
+        }
+    </script>
+</body>
+</html>
